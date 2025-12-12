@@ -58,8 +58,10 @@ class AutoReconnect {
   /// True if the previous state was connected
   bool wasConnected = false;
 
+  Completer autoReconnectCompleter;
+
   /// Constructor
-  AutoReconnect({this.userRequested = false, this.wasConnected = false});
+  AutoReconnect({required this.autoReconnectCompleter, this.userRequested = false, this.wasConnected = false});
 }
 
 /// Re subscribe event

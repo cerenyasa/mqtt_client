@@ -173,11 +173,12 @@ abstract class MqttConnectionHandlerBase implements IMqttConnectionHandler {
       if (onAutoReconnected != null) {
         onAutoReconnected!();
       }
+      reconnectEvent.autoReconnectCompleter.complete();
     } else {
       MqttLogger.log(
         'MqttConnectionHandlerBase::autoReconnect - auto reconnect failed - re trying',
       );
-      clientEventBus!.fire(AutoReconnect());
+      clientEventBus!.fire(AutoReconnect(autoReconnectCompleter: reconnectEvent.autoReconnectCompleter));
     }
   }
 
