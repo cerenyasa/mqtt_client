@@ -177,7 +177,25 @@ class MqttServerWs2Connection extends MqttServerWsConnection {
             .catchError((e) {
               onError(e);
               completer.completeError(e);
+            }).onError((e, s) {
+              if (e is SocketException) {
+                final message =
+                  'MqttNormalConnection::connect - The connection to the message broker '
+                  '{$server}:{$port} could not be made. Error is ${e.toString()}';
+                MqttLogger.log(message);
+              }
+              onError(e);
+              Error.throwWithStackTrace(e ?? UnimplementedError(), s);
             });
+      }).onError((e, s) {
+        if (e is SocketException) {
+          final message =
+              'MqttNormalConnection::connect - The connection to the message broker '
+              '{$server}:{$port} could not be made. Error is ${e.toString()}';
+          MqttLogger.log(message);
+        }
+        onError(e);
+        Error.throwWithStackTrace(e ?? UnimplementedError(), s);
       });
     } on SocketException catch (e, stack) {
       final message =
