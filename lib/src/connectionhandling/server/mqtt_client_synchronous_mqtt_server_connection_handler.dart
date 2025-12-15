@@ -127,9 +127,8 @@ class SynchronousMqttServerConnectionHandler
             'SynchronousMqttServerConnectionHandler::internalConnect'
             ' exception thrown during auto reconnect - ignoring',
           );
-        } else {
-          rethrow;
         }
+        rethrow;
       }
       MqttLogger.log(
         'SynchronousMqttServerConnectionHandler::internalConnect - '
