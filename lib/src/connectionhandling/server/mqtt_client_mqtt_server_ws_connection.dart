@@ -190,24 +190,24 @@ class MqttServerWsConnection extends MqttServerConnection<WebSocket> {
 
   /// Stops listening the socket immediately.
   @override
-  void stopListening() {
-    for (final listener in listeners) {
-      listener.cancel();
-    }
+  Future<void> stopListening() async {
+    await Future.forEach(listeners, (final listener) async {
+      await listener.cancel();
+    });
 
     listeners.clear();
   }
 
   /// Closes the socket immediately.
   @override
-  void closeClient() {
-    client?.close();
+  Future<void> closeClient() async {
+    await client?.close();
   }
 
   /// Closes and dispose the socket immediately.
   @override
-  void disposeClient() {
-    closeClient();
+  Future<void> disposeClient() async {
+    await closeClient();
     client = null;
   }
 

@@ -108,8 +108,13 @@ class MqttServerNormalConnection extends MqttServerConnection<Socket> {
               );
             }
             client = socket;
-            _startListening();
-            completer.complete();
+            try {
+              _startListening();
+              completer.complete();
+            } catch (e) {
+              onError(e);
+              completer.completeError(e);
+            }
           })
           .catchError((e) {
             if (_isSocketTimeout(e)) {
@@ -162,25 +167,46 @@ class MqttServerNormalConnection extends MqttServerConnection<Socket> {
 
   /// Stops listening the socket immediately.
   @override
-  void stopListening() {
-    for (final listener in listeners) {
-      listener.cancel();
-    }
+  Future<void> stopListening() async {
+    final listenersCopy = List<StreamSubscription>.from(listeners);
+    listeners.clear(); // Clear first to prevent recursive issues
 
-    listeners.clear();
+    await Future.forEach(listenersCopy, (final listener) async {
+      try {
+        if (!listener.isPaused) {
+          await listener.cancel();
+        }
+      } catch (e) {
+        // Listener might already be cancelled or in invalid state
+        // This is expected during error conditions, don't propagate
+        MqttLogger.log('MqttServerNormalConnection::stopListening - error cancelling listener: $e');
+      }
+    });
   }
 
   /// Closes the socket immediately.
   @override
-  void closeClient() {
-    client?.destroy();
-    client?.close();
+  Future<void> closeClient() async {
+    if (client != null) {
+      try {
+        client!.destroy();
+      } catch (e) {
+        MqttLogger.log('MqttServerNormalConnection::closeClient - error in destroy(): $e');
+        // Don't rethrow, socket might already be closed
+      }
+      try {
+        await client!.close();
+      } catch (e) {
+        MqttLogger.log('MqttServerNormalConnection::closeClient - error in close(): $e');
+        // Don't rethrow, socket might already be closed
+      }
+    }
   }
 
   /// Closes and dispose the socket immediately.
   @override
-  void disposeClient() {
-    closeClient();
+  Future<void> disposeClient() async {
+    await closeClient();
     if (client != null) {
       client = null;
     }

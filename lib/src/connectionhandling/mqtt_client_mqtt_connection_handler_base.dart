@@ -112,7 +112,7 @@ abstract class MqttConnectionHandlerBase implements IMqttConnectionHandler {
     try {
       await internalConnect(server, port, message);
       return connectionStatus;
-    } on Exception {
+    } catch (e) {
       connectionStatus.state = MqttConnectionState.faulted;
       rethrow;
     }
@@ -128,7 +128,7 @@ abstract class MqttConnectionHandlerBase implements IMqttConnectionHandler {
 
   /// Auto reconnect
   @protected
-  void autoReconnect(AutoReconnect reconnectEvent) async {
+  Future<void> autoReconnect(AutoReconnect reconnectEvent) async {
     MqttLogger.log('MqttConnectionHandlerBase::autoReconnect entered');
     // If already in progress exit and we were not connected return
     if (autoReconnectInProgress && !reconnectEvent.wasConnected) {
@@ -148,7 +148,7 @@ abstract class MqttConnectionHandlerBase implements IMqttConnectionHandler {
       sendMessage(MqttDisconnectMessage());
       connectionStatus.state = MqttConnectionState.disconnecting;
     }
-    connection.disconnect(auto: true);
+    await connection.disconnect(auto: true);
     connection.onDisconnected = null;
     MqttLogger.log(
       'MqttConnectionHandlerBase::autoReconnect - attempting reconnection',
@@ -178,7 +178,7 @@ abstract class MqttConnectionHandlerBase implements IMqttConnectionHandler {
       MqttLogger.log(
         'MqttConnectionHandlerBase::autoReconnect - auto reconnect failed - re trying',
       );
-      clientEventBus!.fire(AutoReconnect(autoReconnectCompleter: reconnectEvent.autoReconnectCompleter));
+      await autoReconnect(AutoReconnect(autoReconnectCompleter: reconnectEvent.autoReconnectCompleter));
     }
   }
 
@@ -328,7 +328,6 @@ abstract class MqttConnectionHandlerBase implements IMqttConnectionHandler {
 
   /// Initialise the event listeners;
   void initialiseListeners() {
-    clientEventBus!.on<AutoReconnect>().listen(autoReconnect);
     clientEventBus!.on<MessageAvailable>().listen(messageAvailable);
     clientEventBus!.on<ConnectAckMessageAvailable>().listen(connectAckReceived);
   }

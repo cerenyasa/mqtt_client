@@ -125,7 +125,7 @@ abstract class MqttServerConnection<T extends Object>
     MqttLogger.log('MqttServerConnection::_startListening');
     try {
       listeners.add(onListen());
-    } on Exception catch (e) {
+    } catch (e) {
       print('MqttServerConnection::_startListening - exception raised $e');
     }
   }

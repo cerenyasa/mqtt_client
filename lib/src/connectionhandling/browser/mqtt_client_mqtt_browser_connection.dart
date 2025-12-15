@@ -89,8 +89,8 @@ abstract class MqttBrowserConnection<T extends Object>
   }
 
   /// Create the listening stream subscription and subscribe the callbacks
-  void _startListening() {
-    stopListening();
+  Future<void> _startListening() async {
+    await stopListening();
     MqttLogger.log('MqttBrowserConnection::_startListening');
     try {
       onListen();

@@ -413,7 +413,7 @@ class MqttClient {
     if (connectionStatus!.state != MqttConnectionState.connected || force) {
       // Fire a manual auto reconnect request.
       final wasConnected = connectionStatus!.state == MqttConnectionState.connected;
-      clientEventBus!.fire(
+      await connectionHandler?.autoReconnect(
         AutoReconnect(autoReconnectCompleter: autoReconnectCompleter, userRequested: true, wasConnected: wasConnected),
       );
       await autoReconnectCompleter.future;
@@ -536,7 +536,7 @@ class MqttClient {
       'MqttClient::_disconnectOnNoPingResponse - disconnecting, no ping request response for $disconnectOnNoResponsePeriod seconds',
     );
     // Destroy the existing client socket
-    connectionHandler?.connection.disconnect();
+    await connectionHandler?.connection.disconnect();
     await internalDisconnect();
   }
 
@@ -548,7 +548,7 @@ class MqttClient {
       'MqttClient::disconnectOnNoMessageSent - disconnecting, no message sent due to exception like socket exception',
     );
     // Destroy the existing client socket
-    connectionHandler?.connection.disconnect();
+    await connectionHandler?.connection.disconnect();
     await internalDisconnect();
   }
 
@@ -568,7 +568,7 @@ class MqttClient {
         if (!connectionHandler.autoReconnectInProgress) {
           final autoReconnectCompleter = Completer();
           // Fire an automatic auto reconnect request
-          clientEventBus!.fire(AutoReconnect(autoReconnectCompleter: autoReconnectCompleter, userRequested: false));
+          await connectionHandler.autoReconnect(AutoReconnect(autoReconnectCompleter: autoReconnectCompleter, userRequested: false));
           await autoReconnectCompleter.future;
         } else {
           MqttLogger.log('MqttClient::internalDisconnect - not invoking auto connect, already in progress');

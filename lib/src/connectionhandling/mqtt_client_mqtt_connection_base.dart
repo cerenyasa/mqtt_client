@@ -51,19 +51,19 @@ abstract class MqttConnectionBase<T extends Object> {
   void send(MqttByteBuffer message);
 
   /// Stops listening the socket immediately, must be overridden in connection classes
-  void stopListening();
+  Future<void> stopListening();
 
   /// Closes the socket immediately, must be overridden in connection classes
-  void closeClient();
+  Future<void> closeClient();
 
   /// Closes and dispose the socket immediately, must be overridden in connection classes
   @mustCallSuper
-  void disposeClient();
+  Future<void> disposeClient();
 
   /// OnError listener callback
   @protected
-  void onError(dynamic error) {
-    _disconnect();
+  Future<void> onError(Object? error, [StackTrace? stackTrace]) async {
+    await _disconnect();
     if (onDisconnected != null) {
       MqttLogger.log(
         'MqttConnectionBase::_onError - calling disconnected callback',
@@ -74,8 +74,8 @@ abstract class MqttConnectionBase<T extends Object> {
 
   /// OnDone listener callback
   @protected
-  void onDone() {
-    _disconnect();
+  Future<void> onDone() async {
+    await _disconnect();
     if (onDisconnected != null) {
       MqttLogger.log(
         'MqttConnectionBase::_onDone - calling disconnected callback',
@@ -86,17 +86,27 @@ abstract class MqttConnectionBase<T extends Object> {
 
   /// User requested or auto disconnect disconnection
   @protected
-  void disconnect({bool auto = false}) {
+  Future<void> disconnect({bool auto = false}) async {
     if (auto) {
-      _disconnect();
+      await _disconnect();
     } else {
-      onDone();
+      await onDone();
     }
   }
 
   /// Internal disconnect with stop listeners and dispose client
-  void _disconnect() {
-    stopListening();
-    disposeClient();
+  Future<void> _disconnect() async {
+    try {
+      await stopListening();
+    } catch (e) {
+      MqttLogger.log('MqttConnectionBase::_disconnect - error in stopListening(): $e');
+      rethrow;
+    }
+    try {
+      await disposeClient();
+    } catch (e) {
+      MqttLogger.log('MqttConnectionBase::_disconnect - error in disposeClient(): $e');
+      rethrow;
+    }
   }
 }

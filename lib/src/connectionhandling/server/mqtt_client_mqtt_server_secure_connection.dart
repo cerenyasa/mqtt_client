@@ -198,25 +198,25 @@ class MqttServerSecureConnection extends MqttServerConnection<SecureSocket> {
 
   /// Stops listening the socket immediately.
   @override
-  void stopListening() {
-    for (final listener in listeners) {
-      listener.cancel();
-    }
+  Future<void> stopListening() async {
+    await Future.forEach (listeners, (final listener) async {
+      await listener.cancel();
+    });
 
     listeners.clear();
   }
 
   /// Closes the socket immediately.
   @override
-  void closeClient() {
+  Future<void> closeClient() async {
     client?.destroy();
-    client?.close();
+    await client?.close();
   }
 
   /// Closes and dispose the socket immediately.
   @override
-  void disposeClient() {
-    closeClient();
+  Future<void> disposeClient() async {
+    await closeClient();
     if (client != null) {
       client = null;
     }
