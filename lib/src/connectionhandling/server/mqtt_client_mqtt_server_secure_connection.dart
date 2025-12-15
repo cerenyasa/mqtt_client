@@ -75,15 +75,20 @@ class MqttServerSecureConnection extends MqttServerConnection<SecureSocket> {
               onError(e);
               completer.completeError(e);
             }
-          }).onError((e, s) {
+          })
+          .onError((e, s) {
+            String message;
             if (e is SocketException) {
-              final message =
+              message =
                   'MqttNormalConnection::connect - The connection to the message broker '
-                  '{$server}:{$port} could not be made. Error is ${e.toString()}';
+                  '{$server}:{$port} is interrupted. Error is ${e.toString()}';
               MqttLogger.log(message);
             }
+            message =
+                'MqttNormalConnection::connect - The connection to the message broker '
+                '{$server}:{$port} could not be made. Error is ${e.toString()}';
             onError(e);
-            Error.throwWithStackTrace(e ?? UnimplementedError(), s);
+            Error.throwWithStackTrace(NoConnectionException(message), s);
           });
     } on SocketException catch (e, stack) {
       final message =
@@ -148,6 +153,20 @@ class MqttServerSecureConnection extends MqttServerConnection<SecureSocket> {
               onError(e);
               completer.completeError(e);
             }
+          })
+          .onError((e, s) {
+            String message;
+            if (e is SocketException) {
+              message =
+                  'MqttNormalConnection::connect - The connection to the message broker '
+                  '{$server}:{$port} is interrupted. Error is ${e.toString()}';
+              MqttLogger.log(message);
+            }
+            message =
+                'MqttNormalConnection::connect - The connection to the message broker '
+                '{$server}:{$port} could not be made. Error is ${e.toString()}';
+            onError(e);
+            Error.throwWithStackTrace(NoConnectionException(message), s);
           });
     } on SocketException catch (e, stack) {
       final message =

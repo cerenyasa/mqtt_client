@@ -177,25 +177,21 @@ class MqttServerWs2Connection extends MqttServerWsConnection {
             .catchError((e) {
               onError(e);
               completer.completeError(e);
-            }).onError((e, s) {
-              if (e is SocketException) {
-                final message =
-                  'MqttNormalConnection::connect - The connection to the message broker '
-                  '{$server}:{$port} could not be made. Error is ${e.toString()}';
-                MqttLogger.log(message);
-              }
-              onError(e);
-              Error.throwWithStackTrace(e ?? UnimplementedError(), s);
-            });
-      }).onError((e, s) {
-        if (e is SocketException) {
-          final message =
-              'MqttNormalConnection::connect - The connection to the message broker '
+            })
+            .onError((e, s) {
+          String message;
+          if (e is SocketException) {
+            message =
+            'MqttNormalConnection::connect - The connection to the message broker '
+                '{$server}:{$port} is interrupted. Error is ${e.toString()}';
+            MqttLogger.log(message);
+          }
+          message =
+          'MqttNormalConnection::connect - The connection to the message broker '
               '{$server}:{$port} could not be made. Error is ${e.toString()}';
-          MqttLogger.log(message);
-        }
-        onError(e);
-        Error.throwWithStackTrace(e ?? UnimplementedError(), s);
+          onError(e);
+          Error.throwWithStackTrace(NoConnectionException(message), s);
+        });
       });
     } on SocketException catch (e, stack) {
       final message =
@@ -266,6 +262,20 @@ class MqttServerWs2Connection extends MqttServerWsConnection {
             .catchError((e) {
               onError(e);
               completer.completeError(e);
+            })
+            .onError((e, s) {
+              String message;
+              if (e is SocketException) {
+                message =
+                    'MqttNormalConnection::connect - The connection to the message broker '
+                    '{$server}:{$port} is interrupted. Error is ${e.toString()}';
+                MqttLogger.log(message);
+              }
+              message =
+                  'MqttNormalConnection::connect - The connection to the message broker '
+                  '{$server}:{$port} could not be made. Error is ${e.toString()}';
+              onError(e);
+              Error.throwWithStackTrace(NoConnectionException(message), s);
             });
       });
     } on SocketException catch (e, stack) {
