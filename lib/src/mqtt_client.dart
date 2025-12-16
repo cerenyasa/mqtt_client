@@ -410,13 +410,20 @@ class MqttClient {
     }
     final autoReconnectCompleter = Completer();
 
-    if (connectionStatus!.state != MqttConnectionState.connected || force) {
-      // Fire a manual auto reconnect request.
-      final wasConnected = connectionStatus!.state == MqttConnectionState.connected;
-      await connectionHandler?.autoReconnect(
-        AutoReconnect(autoReconnectCompleter: autoReconnectCompleter, userRequested: true, wasConnected: wasConnected),
-      );
-      await autoReconnectCompleter.future;
+    try {
+      if (connectionStatus!.state != MqttConnectionState.connected || force) {
+        // Fire a manual auto reconnect request.
+        final wasConnected = connectionStatus!.state == MqttConnectionState.connected;
+        await connectionHandler?.autoReconnect(
+          AutoReconnect(autoReconnectCompleter: autoReconnectCompleter, userRequested: true, wasConnected: wasConnected),
+        );
+        await autoReconnectCompleter.future;
+      }
+    } catch (e) {
+      final error = 'MqttClient::doAutoReconnect - exception raised during auto reconnect $e';
+      MqttLogger.log(error);
+      autoReconnectCompleter.completeError(error);
+      rethrow;
     }
   }
 
@@ -557,16 +564,17 @@ class MqttClient {
   /// client to close itself down correctly on disconnect.
   @protected
   Future<void> internalDisconnect() async {
+    final autoReconnectCompleter = Completer();
     try {
       // if we don't have a connection Handler we are already disconnected.
       final connectionHandler = this.connectionHandler;
       if (connectionHandler == null) {
         MqttLogger.log('MqttClient::internalDisconnect - not invoking disconnect, no connection handler');
+        autoReconnectCompleter.complete;
         return;
       }
       if (autoReconnect && connectionHandler.initialConnectionComplete) {
         if (!connectionHandler.autoReconnectInProgress) {
-          final autoReconnectCompleter = Completer();
           // Fire an automatic auto reconnect request
           await connectionHandler.autoReconnect(AutoReconnect(autoReconnectCompleter: autoReconnectCompleter, userRequested: false));
           await autoReconnectCompleter.future;
@@ -580,7 +588,9 @@ class MqttClient {
         }
       }
     } catch (e) {
-      MqttLogger.log('MqttClient::internalDisconnect - exception raised $e');
+      final error = 'MqttClient::internalDisconnect - exception raised $e';
+      MqttLogger.log(error);
+      autoReconnectCompleter.completeError(error);
     }
   }
 
