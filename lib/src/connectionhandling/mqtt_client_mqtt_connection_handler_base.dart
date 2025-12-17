@@ -132,7 +132,7 @@ abstract class MqttConnectionHandlerBase implements IMqttConnectionHandler {
 
   /// Auto reconnect
   @protected
-  void autoReconnect(AutoReconnect reconnectEvent) async {
+  Future<void> autoReconnect(AutoReconnect reconnectEvent) async {
     MqttLogger.log('MqttConnectionHandlerBase::autoReconnect entered');
     // If already in progress exit and we were not connected return
     if (autoReconnectInProgress && !reconnectEvent.wasConnected) {
@@ -182,7 +182,7 @@ abstract class MqttConnectionHandlerBase implements IMqttConnectionHandler {
         'MqttConnectionHandlerBase::autoReconnect - auto reconnect failed - re trying',
       );
       if (!_isClientEventBusClosed) {
-        clientEventBus!.fire(AutoReconnect());
+        await autoReconnect(AutoReconnect());
       }
     }
   }
@@ -336,7 +336,6 @@ abstract class MqttConnectionHandlerBase implements IMqttConnectionHandler {
     if (_isClientEventBusClosed) {
       return;
     }
-    clientEventBus!.on<AutoReconnect>().listen(autoReconnect);
     clientEventBus!.on<MessageAvailable>().listen(messageAvailable);
     clientEventBus!.on<ConnectAckMessageAvailable>().listen(connectAckReceived);
   }
