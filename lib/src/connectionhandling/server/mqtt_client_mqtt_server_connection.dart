@@ -124,8 +124,8 @@ abstract class MqttServerConnection<T extends Object>
   }
 
   // Create the listening stream subscription and subscribe the callbacks
-  void _startListening() {
-    stopListening();
+  Future<void> _startListening() async {
+    await stopListening();
     MqttLogger.log('MqttServerConnection::_startListening');
     try {
       listeners.add(onListen());

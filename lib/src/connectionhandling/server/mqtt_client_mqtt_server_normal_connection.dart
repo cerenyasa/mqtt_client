@@ -35,7 +35,7 @@ class MqttServerNormalConnection extends MqttServerConnection<Socket> {
     try {
       // Connect and save the socket.
       Socket.connect(server, port, timeout: socketTimeout)
-          .then((socket) {
+          .then((socket) async {
             // Socket options
             final applied = _applySocketOptions(socket, socketOptions);
             if (applied) {
@@ -46,7 +46,7 @@ class MqttServerNormalConnection extends MqttServerConnection<Socket> {
             client = socket;
             readWrapper = ReadWrapper();
             messageStream = MqttByteBuffer(typed.Uint8Buffer());
-            _startListening();
+            await _startListening();
             completer.complete();
           })
           .catchError((e) {
@@ -85,7 +85,7 @@ class MqttServerNormalConnection extends MqttServerConnection<Socket> {
     try {
       // Connect and save the socket.
       Socket.connect(server, port, timeout: socketTimeout)
-          .then((socket) {
+          .then((socket) async {
             // Socket options
             final applied = _applySocketOptions(socket, socketOptions);
             if (applied) {
@@ -94,10 +94,10 @@ class MqttServerNormalConnection extends MqttServerConnection<Socket> {
               );
             }
             client = socket;
-            _startListening();
+            await _startListening();
             completer.complete();
           })
-          .catchError((e) {
+          .catchError((e) async {
             if (_isSocketTimeout(e)) {
               final message =
                   'MqttNormalConnection::connectAuto - The connection to the message broker '
@@ -105,7 +105,7 @@ class MqttServerNormalConnection extends MqttServerConnection<Socket> {
               MqttLogger.log(message);
               completer.complete();
             } else {
-              onError(e);
+              await onError(e);
               completer.completeError(e);
             }
           });
