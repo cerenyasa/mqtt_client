@@ -49,7 +49,7 @@ void main() {
             isTrue,
           );
           await MqttUtilities.asyncSleep(2);
-          client.doAutoReconnect();
+          await client.doAutoReconnect();
           await MqttUtilities.asyncSleep(2);
           expect(autoReconnectCallbackCalled, isFalse);
           expect(disconnectCallbackCalled, isFalse);
@@ -104,7 +104,7 @@ void main() {
             isTrue,
           );
           await MqttUtilities.asyncSleep(2);
-          client.doAutoReconnect(force: true);
+          await client.doAutoReconnect(force: true);
           await MqttUtilities.asyncSleep(2);
           expect(autoReconnectCallbackCalled, isTrue);
           expect(disconnectCallbackCalled, isFalse);
