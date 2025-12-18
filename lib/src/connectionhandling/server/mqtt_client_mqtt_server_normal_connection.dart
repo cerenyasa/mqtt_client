@@ -147,7 +147,6 @@ class MqttServerNormalConnection extends MqttServerConnection<Socket> {
   @override
   Future<void> closeClient() async {
     try {
-      client?.destroy();
       await client?.close();
     } catch (e) {
       MqttLogger.log('MqttNormalConnection::closeClient - exception on close $e');
