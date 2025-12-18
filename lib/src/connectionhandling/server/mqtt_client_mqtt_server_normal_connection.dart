@@ -35,7 +35,7 @@ class MqttServerNormalConnection extends MqttServerConnection<Socket> {
     try {
       // Connect and save the socket.
       Socket.connect(server, port, timeout: socketTimeout)
-          .then((socket) async {
+          .then((socket) {
             // Socket options
             final applied = _applySocketOptions(socket, socketOptions);
             if (applied) {
@@ -46,7 +46,7 @@ class MqttServerNormalConnection extends MqttServerConnection<Socket> {
             client = socket;
             readWrapper = ReadWrapper();
             messageStream = MqttByteBuffer(typed.Uint8Buffer());
-            await _startListening();
+            _startListening();
             completer.complete();
           })
           .catchError((e) {
@@ -85,7 +85,7 @@ class MqttServerNormalConnection extends MqttServerConnection<Socket> {
     try {
       // Connect and save the socket.
       Socket.connect(server, port, timeout: socketTimeout)
-          .then((socket) async {
+          .then((socket) {
             // Socket options
             final applied = _applySocketOptions(socket, socketOptions);
             if (applied) {
@@ -94,10 +94,10 @@ class MqttServerNormalConnection extends MqttServerConnection<Socket> {
               );
             }
             client = socket;
-            await _startListening();
+            _startListening();
             completer.complete();
           })
-          .catchError((e) async {
+          .catchError((e) {
             if (_isSocketTimeout(e)) {
               final message =
                   'MqttNormalConnection::connectAuto - The connection to the message broker '
@@ -105,7 +105,7 @@ class MqttServerNormalConnection extends MqttServerConnection<Socket> {
               MqttLogger.log(message);
               completer.complete();
             } else {
-              await onError(e);
+              onError(e);
               completer.completeError(e);
             }
           });
@@ -145,12 +145,10 @@ class MqttServerNormalConnection extends MqttServerConnection<Socket> {
 
   /// Closes the socket immediately.
   @override
-  Future<void> closeClient() async {
-    try {
-      await client?.close();
-    } catch (e) {
-      MqttLogger.log('MqttNormalConnection::closeClient - exception on close $e');
-    }
+  void closeClient() {
+    client?.close().catchError((e, s) =>
+        MqttLogger.log('MqttNormalConnection::closeClient - exception on close $e'),
+    );
   }
 
   /// Closes and dispose the socket immediately.

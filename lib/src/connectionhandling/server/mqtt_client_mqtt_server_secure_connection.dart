@@ -181,8 +181,10 @@ class MqttServerSecureConnection extends MqttServerConnection<SecureSocket> {
 
   /// Closes the socket immediately.
   @override
-  Future<void> closeClient() async {
-    await client?.close();
+  void closeClient() {
+    client?.close().catchError((e, s) =>
+        MqttLogger.log('MqttNormalConnection::closeClient - exception on close $e'),
+    );
   }
 
   /// Closes and dispose the socket immediately.
