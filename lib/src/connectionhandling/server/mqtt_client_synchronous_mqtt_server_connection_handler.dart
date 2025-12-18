@@ -120,16 +120,15 @@ class SynchronousMqttServerConnectionHandler
           );
           await connection.connectAuto(hostname, port);
         }
-      } on Exception {
+      } catch (e) {
         // Ignore exceptions in an auto reconnect sequence
         if (autoReconnectInProgress) {
           MqttLogger.log(
             'SynchronousMqttServerConnectionHandler::internalConnect'
             ' exception thrown during auto reconnect - ignoring',
           );
-        } else {
-          rethrow;
         }
+        rethrow;
       }
       MqttLogger.log(
         'SynchronousMqttServerConnectionHandler::internalConnect - '

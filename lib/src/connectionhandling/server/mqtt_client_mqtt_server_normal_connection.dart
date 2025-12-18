@@ -67,7 +67,7 @@ class MqttServerNormalConnection extends MqttServerConnection<Socket> {
           '{$server}:{$port} could not be made. Error is ${e.toString()}';
       completer.completeError(e);
       Error.throwWithStackTrace(NoConnectionException(message), stack);
-    } on Exception catch (e, stack) {
+    } catch (e, stack) {
       completer.completeError(e);
       final message =
           'MqttNormalConnection::Connect - The connection to the message '
@@ -115,7 +115,7 @@ class MqttServerNormalConnection extends MqttServerConnection<Socket> {
           '{$server}:{$port} could not be made. Error is ${e.toString()}';
       completer.completeError(e);
       Error.throwWithStackTrace(NoConnectionException(message), stack);
-    } on Exception catch (e, stack) {
+    } catch (e, stack) {
       completer.completeError(e);
       final message =
           'MqttNormalConnection::ConnectAuto - The connection to the message '
