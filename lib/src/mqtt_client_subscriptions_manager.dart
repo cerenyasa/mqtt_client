@@ -230,6 +230,11 @@ class SubscriptionsManager {
   void publishMessageReceived(MessageReceived event) {
     final topic = event.topic;
     final msg = MqttReceivedMessage<MqttMessage>(topic.rawTopic, event.message);
+
+    // Prevent adding events to the stream after it has been closed to avoid StateError.
+    if (_subscriptionNotifier.isClosed) {
+      return;
+    }
     _subscriptionNotifier.add([msg]);
   }
 
